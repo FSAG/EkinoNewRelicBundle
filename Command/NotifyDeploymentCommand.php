@@ -73,25 +73,38 @@ class NotifyDeploymentCommand extends Command
     {
         $newrelic = $this->newrelic;
 
-        $status = $this->performRequest($newrelic->getApiKey(), $this->createPayload($newrelic, $input));
+        $appNames = $newrelic->getDeploymentNames();
 
-        switch($status)
-        {
-            case 200:
-            case 201:
-                $output->writeLn(sprintf("Recorded deployment to '%s' (%s)", $newrelic->getName(), ($input->getOption('description') ? $input->getOption('description') : date('r'))));
-                break;
-            case 403:
-                $output->writeLn("<error>Deployment not recorded: API key invalid</error>");
-                break;
-            case null:
-                $output->writeLn("<error>Deployment not recorded: Did not understand response</error>");
-                break;
-            default:
-                $output->writeLn(sprintf("<error>Deployment not recorded: Received HTTP status %d</error>", $status));
+        if (!$appNames) {
+            $output->writeLn("<error>No deployment application configured.</error>");
+            return;
+        }
+
+        foreach ($appNames as $appName) {
+            $status = $this->performRequest($newrelic->getApiKey(), $this->createPayload($appName, $input));
+
+            switch($status)
+            {
+                case 200:
+                case 201:
+                    $output->writeLn(sprintf("Recorded deployment to '%s' (%s)", $appName, ($input->getOption('description') ? $input->getOption('description') : date('r'))));
+                    break;
+                case 403:
+                    $output->writeLn(sprintf("<error>Deployment not recorded to '%s': API key invalid</error>", $appName));
+                    break;
+                case null:
+                    $output->writeLn(strintf("<error>Deployment not recorded to '%s': Did not understand response</error>", $appName));
+                    break;
+                default:
+                    $output->writeLn(sprintf("<error>Deployment not recorded to '%s': Received HTTP status %d</error>", $appName, $status));
+            }
         }
     }
 
+    /**
+     * @param string $api_key
+     * @param string $payload
+     */
     public function performRequest($api_key, $payload)
     {
         $headers = array(
@@ -129,10 +142,16 @@ class NotifyDeploymentCommand extends Command
         return null;
     }
 
-    protected function createPayload(NewRelic $newrelic, InputInterface $input)
+    /**
+     * @param string $appName
+     * @param InputInterface $input
+     *
+     * @return string
+     */
+    protected function createPayload($appName, InputInterface $input)
     {
         $content_array = array(
-            'deployment[app_name]' => $newrelic->getName()
+            'deployment[app_name]' => $appName
         );
 
         if (($user = $input->getOption('user')))
