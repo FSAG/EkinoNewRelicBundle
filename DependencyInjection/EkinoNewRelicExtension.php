@@ -14,7 +14,6 @@ namespace  Ekino\Bundle\NewRelicBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
@@ -75,7 +74,7 @@ class EkinoNewRelicExtension extends Extension
         }
 
         if (!$config['deployment_names']) {
-            $config['deployment_names'] = array_filter(array_map('trim', explode(';', $config['application_name'])));
+            $config['deployment_names'] = array_filter(explode(';', $config['application_name']));
         }
 
         $container->getDefinition('ekino.new_relic')
