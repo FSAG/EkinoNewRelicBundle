@@ -103,7 +103,7 @@ ekino_new_relic:
     enabled: true                         # Defaults to true
     application_name: Awesome Application # default value in newrelic is "PHP Application", or whatever is set
                                           # as php ini-value
-    deployment_name: ~                    # default value is 'application_name', supports string array or semi-colon separated string
+    deployment_names: ~                   # default value is 'application_name', supports string array or semi-colon separated string
     api_key:                              # New Relic API
     license_key:                          # New Relic license key
     xmit: false                           # if you want to record the metric data up to the point newrelic_set_appname is called, set this to true
